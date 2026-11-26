@@ -1,44 +1,40 @@
-# SQLite and PostgreSQL Search CLI
+# Поиск в SQLite и PostgreSQL
 
-Search a specified table and column for a case-sensitive substring and print matching rows in the terminal.
+Консольная утилита ищет подстроку с учётом регистра в выбранном столбце таблицы и выводит совпавшие строки.
 
-## Features
+## Возможности
 
-- SQLite searches use a read-only file connection.
-- PostgreSQL searches run in a read-only transaction using PostgreSQL connection settings.
-- Both commands accept a row limit and treat the search string as a literal substring.
+- Открывает файл SQLite в режиме чтения.
+- Выполняет запрос к PostgreSQL в транзакции только для чтения.
+- Принимает буквальную подстроку и ограничение на число результатов.
 
-## Stack and architecture
+## Устройство
 
-`main.py` dispatches subcommands with `argparse`. SQLite uses the Python `sqlite3` module and the `instr` function. PostgreSQL uses Psycopg 3 and the `strpos` function. Search values are bound as query parameters. Table and column identifiers are quoted separately.
+`main.py` разбирает аргументы через `argparse`. Для SQLite применяются модуль `sqlite3` и функция `instr`. PostgreSQL использует Psycopg 3 и функцию `strpos`. Значения поиска передаются параметрами. Имена таблицы и столбца экранируются отдельно.
 
-## Setup
+## Установка
 
-Use Python 3.10 or later. For SQLite, run the script directly. For PostgreSQL, install the driver.
+Требуется Python 3.10 или новее. SQLite доступен через стандартную библиотеку. Для подключения к PostgreSQL установите драйвер:
 
 ```sh
 python -m pip install -r requirements.txt
 ```
 
-## Configuration and examples
+## Примеры
 
-Search a local SQLite file.
+Поиск в локальном файле SQLite:
 
 ```sh
 python main.py sqlite ./data/sample.sqlite3 documents title "Safety" --limit 20
 ```
 
-For PostgreSQL, configure the connection through libpq. A service entry and a password file can keep credentials out of command history. The example assumes that the `portfolio_demo` service already exists.
+Для PostgreSQL настройте подключение через libpq. Файл паролей и отдельное описание подключения позволяют хранить параметры вне истории команд. Пример использует заранее настроенное подключение `portfolio_demo`.
 
 ```powershell
 $env:PGSERVICE = 'portfolio_demo'
 python main.py postgres --schema public documents title "Safety" --limit 20
 ```
 
-## Status and limitations
+## Ограничения и проверка
 
-Each invocation searches one column and prints all fields of the selected rows. The default limit is 100 and row order is unspecified. Use test data when sharing a terminal transcript. The SQLite branch has a local smoke test against synthetic data. A live PostgreSQL connection has yet to be verified in this review.
-
-## Кратко для портфолио
-
-Консольная утилита для поиска подстрок в SQLite и PostgreSQL. Работает в режиме чтения, параметризует поисковые значения и ограничивает размер выдачи.
+За один запуск утилита ищет по одному столбцу и печатает все поля найденных строк. По умолчанию лимит составляет 100 записей. Порядок выдачи не задан. Поиск SQLite проверен на синтетической базе. Интеграционная проверка на сервере PostgreSQL ещё требуется.
